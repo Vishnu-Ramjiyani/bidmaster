@@ -12,14 +12,14 @@ import MyBids from './pages/MyBids';
 import MyListings from './pages/MyListings';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
-const ProtectedRoute = ({ children, roles }: { children: JSX.Element, roles?: string[] }) => {
+const ProtectedRoute = ({ children, roles }: { children: React.ReactNode, roles?: string[] }) => {
   const { user, profile, loading } = useAuth();
 
   if (loading) return <div>Loading...</div>;
   if (!user) return <Navigate to="/login" />;
   if (roles && profile && !roles.includes(profile.role)) return <Navigate to="/" />;
 
-  return children;
+  return <>{children}</>;
 };
 
 function App() {
@@ -41,17 +41,17 @@ function App() {
               </ProtectedRoute>
             } />
             <Route path="my-bids" element={
-              <ProtectedRoute roles={['buyer', 'admin']}>
+              <ProtectedRoute>
                 <MyBids />
               </ProtectedRoute>
             } />
             <Route path="my-listings" element={
-              <ProtectedRoute roles={['seller', 'admin']}>
+              <ProtectedRoute>
                 <MyListings />
               </ProtectedRoute>
             } />
             <Route path="create-auction" element={
-              <ProtectedRoute roles={['seller', 'admin']}>
+              <ProtectedRoute>
                 <CreateAuction />
               </ProtectedRoute>
             } />

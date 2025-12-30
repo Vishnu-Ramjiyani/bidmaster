@@ -1,36 +1,27 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { supabase } from '../api/supabase';
 import { toast } from 'react-hot-toast';
-import { UserPlus, Loader2, User, ShoppingBag } from 'lucide-react';
+import { UserPlus, Loader2 } from 'lucide-react';
 
 const registerSchema = z.object({
     email: z.string().email('Invalid email address'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     username: z.string().min(3, 'Username must be at least 3 characters'),
-    role: z.enum(['buyer', 'seller']),
 });
 
 type RegisterForm = z.infer<typeof registerSchema>;
 
 const Register: React.FC = () => {
     const [loading, setLoading] = useState(false);
-    const [searchParams] = useSearchParams();
     const navigate = useNavigate();
 
-    const defaultRole = (searchParams.get('role') as 'buyer' | 'seller') || 'buyer';
-
-    const { register, handleSubmit, watch, setValue, formState: { errors } } = useForm<RegisterForm>({
+    const { register, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
         resolver: zodResolver(registerSchema),
-        defaultValues: {
-            role: defaultRole,
-        }
     });
-
-    const selectedRole = watch('role');
 
     const onSubmit = async (data: RegisterForm) => {
         setLoading(true);
@@ -41,7 +32,7 @@ const Register: React.FC = () => {
                 options: {
                     data: {
                         username: data.username,
-                        role: data.role,
+                        role: 'user',
                     }
                 }
             });
@@ -54,7 +45,7 @@ const Register: React.FC = () => {
             }
 
             if (authData.user) {
-                toast.success('Registration successful! Check your email for verification.');
+                toast.success('Registration successful! You can now sign in.');
                 navigate('/login');
             }
         } catch (error: any) {
@@ -77,36 +68,12 @@ const Register: React.FC = () => {
                 </div>
 
                 <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
-                    <div className="grid grid-cols-2 gap-4">
-                        <button
-                            type="button"
-                            onClick={() => setValue('role', 'buyer')}
-                            className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${selectedRole === 'buyer'
-                                    ? 'border-primary-600 bg-primary-50 text-primary-700'
-                                    : 'border-slate-100 bg-slate-50 text-slate-500 hover:border-slate-200'
-                                }`}
-                        >
-                            <User className="h-6 w-6" />
-                            <span className="text-xs font-bold uppercase tracking-wider">Buyer</span>
-                        </button>
-                        <button
-                            type="button"
-                            onClick={() => setValue('role', 'seller')}
-                            className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${selectedRole === 'seller'
-                                    ? 'border-primary-600 bg-primary-50 text-primary-700'
-                                    : 'border-slate-100 bg-slate-50 text-slate-500 hover:border-slate-200'
-                                }`}
-                        >
-                            <ShoppingBag className="h-6 w-6" />
-                            <span className="text-xs font-bold uppercase tracking-wider">Seller</span>
-                        </button>
-                    </div>
-
                     <div>
                         <label className="block text-sm font-medium text-slate-700 mb-1">Username</label>
                         <input
                             {...register('username')}
                             type="text"
+                            placeholder="johndoe"
                             className={`input ${errors.username ? 'border-red-500' : ''}`}
                         />
                         {errors.username && <p className="mt-1 text-xs text-red-500">{errors.username.message}</p>}
@@ -117,6 +84,7 @@ const Register: React.FC = () => {
                         <input
                             {...register('email')}
                             type="email"
+                            placeholder="john@example.com"
                             className={`input ${errors.email ? 'border-red-500' : ''}`}
                         />
                         {errors.email && <p className="mt-1 text-xs text-red-500">{errors.email.message}</p>}
@@ -127,6 +95,7 @@ const Register: React.FC = () => {
                         <input
                             {...register('password')}
                             type="password"
+                            placeholder="••••••••"
                             className={`input ${errors.password ? 'border-red-500' : ''}`}
                         />
                         {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>}

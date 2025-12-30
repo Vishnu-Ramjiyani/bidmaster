@@ -1,20 +1,28 @@
 -- Clean version of the schema that avoids "Ownership" errors
 -- Run this in the Supabase SQL Editor
 
--- 1. Create Profile Roles Enum (Safe creation)
-DO $$ BEGIN
-    CREATE TYPE user_role AS ENUM ('buyer', 'seller', 'admin');
-EXCEPTION
-    WHEN duplicate_object THEN null;
+-- 1. Create Profile Roles Enum (Safe creation and upgrade)
+DO $$ 
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role') THEN
+        CREATE TYPE user_role AS ENUM ('user', 'admin');
+    ELSE
+        -- Ensure 'user' value exists for users migrating from older schema
+        BEGIN
+            ALTER TYPE user_role ADD VALUE 'user';
+        EXCEPTION
+            WHEN duplicate_object THEN null;
+        END;
+    END IF;
 END $$;
 
--- 2. Create Profiles Table (Public schema, no ownership issues)
+-- 2. Create Profiles Table
 CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID REFERENCES auth.users ON DELETE CASCADE PRIMARY KEY,
   username TEXT UNIQUE NOT NULL,
   email TEXT,
   avatar_url TEXT,
-  role user_role DEFAULT 'buyer' NOT NULL,
+  role user_role DEFAULT 'user' NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
@@ -78,41 +86,49 @@ CREATE POLICY "Categories are viewable by everyone" ON public.categories FOR SEL
 
 DROP POLICY IF EXISTS "Auctions are viewable by everyone" ON public.auctions;
 CREATE POLICY "Auctions are viewable by everyone" ON public.auctions FOR SELECT USING (true);
-DROP POLICY IF EXISTS "Sellers can create auctions" ON public.auctions;
-CREATE POLICY "Sellers can create auctions" ON public.auctions FOR INSERT WITH CHECK (
-  EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND (role = 'seller' OR role = 'admin'))
-);
+
+DROP POLICY IF EXISTS "Users can create auctions" ON public.auctions;
+CREATE POLICY "Users can create auctions" ON public.auctions FOR INSERT WITH CHECK (auth.role() = 'authenticated');
+
+DROP POLICY IF EXISTS "Sellers can update their own auctions" ON public.auctions;
+CREATE POLICY "Sellers can update their own auctions" ON public.auctions FOR UPDATE USING (auth.uid() = seller_id);
+
+DROP POLICY IF EXISTS "Sellers can delete their own auctions" ON public.auctions;
+CREATE POLICY "Sellers can delete their own auctions" ON public.auctions FOR DELETE USING (auth.uid() = seller_id);
 
 DROP POLICY IF EXISTS "Bids are viewable by everyone" ON public.bids;
 CREATE POLICY "Bids are viewable by everyone" ON public.bids FOR SELECT USING (true);
+
 DROP POLICY IF EXISTS "Authenticated users can place bids" ON public.bids;
 CREATE POLICY "Authenticated users can place bids" ON public.bids FOR INSERT WITH CHECK (auth.role() = 'authenticated');
 
--- 9. Trigger Function (Public schema)
+-- 9. Trigger Function
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger
 LANGUAGE plpgsql
 SECURITY DEFINER SET search_path = public
 AS $$
+DECLARE
+  default_role user_role := 'user'::user_role;
+  meta_role text;
 BEGIN
+  meta_role := new.raw_user_meta_data->>'role';
+  
   INSERT INTO public.profiles (id, username, email, role)
   VALUES (
     new.id, 
     COALESCE(new.raw_user_meta_data->>'username', 'user_' || substr(new.id::text, 1, 8)),
     new.email,
     CASE 
-      WHEN (new.raw_user_meta_data->>'role') = 'seller' THEN 'seller'::user_role
-      WHEN (new.raw_user_meta_data->>'role') = 'admin' THEN 'admin'::user_role
-      ELSE 'buyer'::user_role
+      WHEN meta_role = 'admin' THEN 'admin'::user_role
+      ELSE 'user'::user_role
     END
   );
   RETURN new;
 END;
 $$;
 
--- 10. IMPORTANT: Trigger Creation
--- If this line still fails, you may need to go to "Database" -> "Triggers" 
--- in the Supabase Sidebar and create it via the UI targeting auth.users
+-- 10. Trigger Creation
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users

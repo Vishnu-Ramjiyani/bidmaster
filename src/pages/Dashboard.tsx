@@ -76,94 +76,112 @@ const Dashboard: React.FC = () => {
     };
 
     if (loading) return (
-        <div className="flex items-center justify-center min-h-[calc(100vh-64px)]">
+        <div className="flex flex-col items-center justify-center min-h-[calc(100vh-64px)]">
             <motion.div
                 animate={{ rotate: 360 }}
                 transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                className="h-12 w-12 border-4 border-primary-100 border-t-primary-600 rounded-full"
+                className="h-16 w-16 border-4 border-slate-200 border-t-primary-600 rounded-full"
             />
+            <p className="mt-4 text-slate-400 font-bold">Synchronizing your dashboard...</p>
         </div>
     );
 
     return (
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-            <div className="mb-10">
-                <h1 className="text-4xl font-black text-slate-900 mb-2">Welcome Back, {profile?.username || 'User'}!</h1>
-                <p className="text-slate-500">Track your auction activity and sales.</p>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div className="mb-12">
+                <h2 className="text-xs font-black text-primary-600 uppercase tracking-[0.3em] mb-4">Account Overview</h2>
+                <h1 className="text-4xl md:text-5xl font-black text-slate-900 mb-2 tracking-tight">
+                    Welcome back, <span className="gradient-text">{profile?.username || 'User'}</span>!
+                </h1>
+                <p className="text-slate-500 text-lg">Manage your listings, track your bids, and grow your collection.</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
                 {[
-                    { label: 'Active Bids', value: stats.activeBids, icon: Gavel, color: 'bg-blue-500' },
-                    { label: 'My Listings', value: stats.activeListings, icon: ShoppingBag, color: 'bg-purple-500' },
-                    { label: 'Total Invested', value: `$${stats.totalSpent.toLocaleString()}`, icon: TrendingUp, color: 'bg-green-500' },
-                    { label: 'Potential Sales', value: `$${stats.totalEarned.toLocaleString()}`, icon: Clock, color: 'bg-orange-500' },
+                    { label: 'Active Bids', value: stats.activeBids, icon: Gavel, color: 'text-blue-600', bg: 'bg-blue-50' },
+                    { label: 'Live Listings', value: stats.activeListings, icon: ShoppingBag, color: 'text-purple-600', bg: 'bg-purple-50' },
+                    { label: 'Invested', value: `$${stats.totalSpent.toLocaleString()}`, icon: TrendingUp, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                    { label: 'Market Value', value: `$${stats.totalEarned.toLocaleString()}`, icon: Clock, color: 'text-orange-600', bg: 'bg-orange-50' },
                 ].map((stat, i) => (
                     <motion.div
                         key={i}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: i * 0.1 }}
-                        className="card p-6 border-slate-100 flex items-center gap-4"
+                        className="card p-8 border-none shadow-xl shadow-slate-200/40 flex flex-col gap-6"
                     >
-                        <div className={`${stat.color} p-3 rounded-xl text-white`}>
+                        <div className={`${stat.bg} ${stat.color} h-12 w-12 rounded-2xl flex items-center justify-center`}>
                             <stat.icon className="h-6 w-6" />
                         </div>
                         <div>
-                            <p className="text-sm font-bold text-slate-400 uppercase tracking-wider">{stat.label}</p>
-                            <p className="text-2xl font-black text-slate-900">{stat.value}</p>
+                            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{stat.label}</p>
+                            <p className="text-3xl font-black text-slate-900 tracking-tight">{stat.value}</p>
                         </div>
                     </motion.div>
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <div className="card border-slate-100 overflow-hidden">
-                    <div className="p-6 border-b border-slate-50 flex items-center justify-between">
-                        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                            <Gavel className="h-5 w-5 text-primary-600" /> Recent Bids
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                <div className="card border-none shadow-xl shadow-slate-200/40 overflow-hidden">
+                    <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+                        <h2 className="text-xl font-black text-slate-900 flex items-center gap-3">
+                            <Gavel className="h-6 w-6 text-primary-600" /> Recent Activity
                         </h2>
-                        <Link to="/my-bids" className="text-sm font-bold text-primary-600 hover:underline">View All</Link>
+                        <Link to="/my-bids" className="btn-secondary py-2 px-4 text-xs tracking-wider">All Bids</Link>
                     </div>
                     <div className="divide-y divide-slate-50">
                         {recentBids.length > 0 ? recentBids.map((bid) => (
-                            <div key={bid.id} className="p-6 flex items-center justify-between">
+                            <div key={bid.id} className="p-8 flex items-center justify-between hover:bg-slate-50/50 transition-colors">
                                 <div>
-                                    <p className="font-bold text-slate-900">Bid on {bid.auction?.title || 'Unknown'}</p>
-                                    <p className="text-xs text-slate-500">{formatDistanceToNow(new Date(bid.created_at))} ago</p>
+                                    <p className="font-black text-slate-900 text-lg mb-1">{bid.auction?.title || 'Private Listing'}</p>
+                                    <p className="text-xs text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                                        <Clock className="h-3 w-3" /> {formatDistanceToNow(new Date(bid.created_at))} ago
+                                    </p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="font-black text-slate-900">${bid.amount.toLocaleString()}</p>
-                                    <span className="text-[10px] uppercase font-bold text-primary-600">Active</span>
+                                    <p className="font-black text-2xl text-slate-900 tracking-tighter">${bid.amount.toLocaleString()}</p>
+                                    <span className="badge bg-primary-100 text-primary-700 mt-1">Leading</span>
                                 </div>
                             </div>
                         )) : (
-                            <div className="p-12 text-center text-slate-400">No bids yet.</div>
+                            <div className="p-20 text-center">
+                                <Gavel className="h-12 w-12 mx-auto text-slate-100 mb-4" />
+                                <p className="text-slate-400 font-bold leading-relaxed">No bidding activity recorded.<br /><Link to="/auctions" className="text-primary-600 hover:underline">Find something to bid on</Link></p>
+                            </div>
                         )}
                     </div>
                 </div>
 
-                <div className="card border-slate-100 overflow-hidden">
-                    <div className="p-6 border-b border-slate-50 flex items-center justify-between">
-                        <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                            <ShoppingBag className="h-5 w-5 text-primary-600" /> My Listings
+                <div className="card border-none shadow-xl shadow-slate-200/40 overflow-hidden">
+                    <div className="p-8 border-b border-slate-50 flex items-center justify-between bg-slate-50/30">
+                        <h2 className="text-xl font-black text-slate-900 flex items-center gap-3">
+                            <ShoppingBag className="h-6 w-6 text-primary-600" /> Your Inventory
                         </h2>
-                        <Link to="/my-listings" className="text-sm font-bold text-primary-600 hover:underline">Manage</Link>
+                        <Link to="/my-listings" className="btn-secondary py-2 px-4 text-xs tracking-wider">Inventory</Link>
                     </div>
                     <div className="divide-y divide-slate-50">
                         {myAuctions.length > 0 ? myAuctions.map((auction) => (
-                            <Link key={auction.id} to={`/auctions/${auction.id}`} className="p-6 hover:bg-slate-50 transition-colors flex items-center justify-between">
-                                <div className="flex items-center gap-4">
-                                    <img src={auction.images?.[0] || 'https://via.placeholder.com/100'} alt="" className="h-10 w-10 rounded-lg object-cover" />
+                            <Link key={auction.id} to={`/auctions/${auction.id}`} className="p-8 hover:bg-slate-50/50 transition-colors flex items-center justify-between group">
+                                <div className="flex items-center gap-6">
+                                    <div className="h-16 w-16 rounded-2xl overflow-hidden shadow-md">
+                                        <img src={auction.images?.[0] || 'https://images.unsplash.com/photo-1544216717-3bbf52512659?q=80&w=2070&auto=format&fit=crop'} alt="" className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                                    </div>
                                     <div>
-                                        <p className="font-bold text-slate-900 line-clamp-1">{auction.title}</p>
-                                        <p className="text-xs text-slate-500">Current: ${auction.current_price.toLocaleString()}</p>
+                                        <p className="font-black text-slate-900 text-lg mb-1 group-hover:text-primary-600 transition-colors">{auction.title}</p>
+                                        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest flex items-center gap-1">
+                                            Current Value: <span className="text-slate-900">${auction.current_price.toLocaleString()}</span>
+                                        </p>
                                     </div>
                                 </div>
-                                <ChevronRight className="h-5 w-5 text-slate-300" />
+                                <div className="h-10 w-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-300 group-hover:bg-primary-50 group-hover:text-primary-600 transition-all">
+                                    <ChevronRight className="h-6 w-6" />
+                                </div>
                             </Link>
                         )) : (
-                            <div className="p-12 text-center text-slate-400">No listings yet.</div>
+                            <div className="p-20 text-center">
+                                <ShoppingBag className="h-12 w-12 mx-auto text-slate-100 mb-4" />
+                                <p className="text-slate-400 font-bold leading-relaxed">Your inventory is empty.<br /><Link to="/create-auction" className="text-primary-600 hover:underline">List your first item</Link></p>
+                            </div>
                         )}
                     </div>
                 </div>

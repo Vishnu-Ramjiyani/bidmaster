@@ -4,7 +4,7 @@ import { supabase } from '../api/supabase';
 import type { Auction, Bid } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, Gavel, User, ArrowLeft, Loader2, TrendingUp } from 'lucide-react';
+import { Clock, Gavel, User, ArrowLeft, Loader2 } from 'lucide-react';
 import { formatDistanceToNow, isAfter } from 'date-fns';
 import { toast } from 'react-hot-toast';
 
@@ -80,8 +80,8 @@ const AuctionDetail: React.FC = () => {
                         .single();
 
                     const newBid: Bid = {
-                        ...payload.new as Bid,
-                        bidder: bidderData
+                        ...(payload.new as Bid),
+                        bidder: bidderData ? (bidderData as any) : undefined
                     };
 
                     setBids((prev) => [newBid, ...prev]);

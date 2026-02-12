@@ -140,7 +140,11 @@ const Dashboard: React.FC = () => {
                                 </div>
                                 <div className="text-right">
                                     <p className="font-black text-2xl text-slate-900 tracking-tighter">${bid.amount.toLocaleString()}</p>
-                                    <span className="badge bg-primary-100 text-primary-700 mt-1">Leading</span>
+                                    {bid.amount >= (bid.auction?.current_price || 0) ? (
+                                        <span className="badge bg-green-100 text-green-700 mt-1">Leading</span>
+                                    ) : (
+                                        <span className="badge bg-red-100 text-red-700 mt-1">Outbid</span>
+                                    )}
                                 </div>
                             </div>
                         )) : (

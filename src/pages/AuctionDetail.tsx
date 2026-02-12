@@ -149,13 +149,6 @@ const AuctionDetail: React.FC = () => {
 
             if (bidError) throw bidError;
 
-            const { error: auctionUpdateError } = await supabase
-                .from('auctions')
-                .update({ current_price: amount })
-                .eq('id', id);
-
-            if (auctionUpdateError) throw auctionUpdateError;
-
             setBidAmount('');
             toast.success('Your bid has been placed!');
         } catch (error: any) {

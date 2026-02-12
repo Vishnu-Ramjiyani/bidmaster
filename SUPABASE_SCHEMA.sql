@@ -142,3 +142,50 @@ INSERT INTO public.categories (name, slug) VALUES
 ('Fashion', 'fashion'),
 ('Home & Garden', 'home-garden')
 ON CONFLICT (slug) DO NOTHING;
+
+-- 12. Automation Triggers
+
+-- Function to update auction price when a bid is placed
+CREATE OR REPLACE FUNCTION public.handle_new_bid()
+RETURNS trigger
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  -- Update the current_price on the auction
+  UPDATE public.auctions
+  SET current_price = NEW.amount
+  WHERE id = NEW.auction_id;
+
+  -- Notify the seller
+  INSERT INTO public.notifications (user_id, message, type)
+  SELECT 
+    seller_id, 
+    'New bid of $' || NEW.amount || ' placed on your auction: ' || title, 
+    'bid'
+  FROM public.auctions
+  WHERE id = NEW.auction_id;
+
+  -- Notify previous highest bidder they've been outbid
+  INSERT INTO public.notifications (user_id, message, type)
+  SELECT 
+    bidder_id, 
+    'You have been outbid on auction: ' || (SELECT title FROM public.auctions WHERE id = NEW.auction_id), 
+    'outbid'
+  FROM public.bids
+  WHERE auction_id = NEW.auction_id 
+    AND bidder_id != NEW.bidder_id
+    AND amount = (
+      SELECT MAX(amount) 
+      FROM public.bids 
+      WHERE auction_id = NEW.auction_id AND id != NEW.id
+    );
+
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS on_bid_placed ON public.bids;
+CREATE TRIGGER on_bid_placed
+  AFTER INSERT ON public.bids
+  FOR EACH ROW EXECUTE PROCEDURE public.handle_new_bid();

@@ -34,10 +34,10 @@ const EditAuction: React.FC = () => {
     });
 
     useEffect(() => {
-        if (id && user) {
+        if (id && user && loading) {
             fetchAuction();
         }
-    }, [id, user]);
+    }, [id, user?.id, loading]);
 
     const fetchAuction = async () => {
         try {

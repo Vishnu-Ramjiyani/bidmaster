@@ -112,7 +112,7 @@ const Auctions: React.FC = () => {
                                     <div className="flex items-center justify-between mb-4">
                                         <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter text-slate-400 bg-slate-50 px-2 py-1 rounded-md">
                                             <Clock className="h-3 w-3" />
-                                            {formatDistanceToNow(new Date(auction.end_time))} left
+                                            {new Date(auction.end_time) < new Date() ? 'Ended' : `${formatDistanceToNow(new Date(auction.end_time))} left`}
                                         </div>
                                         <div className="text-[10px] font-black text-primary-600 uppercase tracking-widest">
                                             @{auction.seller?.username}

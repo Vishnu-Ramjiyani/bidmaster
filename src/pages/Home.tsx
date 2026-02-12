@@ -5,7 +5,7 @@ import { Gavel, Shield, Zap, Clock, ArrowRight } from 'lucide-react';
 
 const Home: React.FC = () => {
     return (
-        <div className="flex flex-col hero-gradient">
+        <div className="flex flex-col hero-gradient overflow-x-hidden">
             {/* Hero Section */}
             <section className="relative py-24 md:py-32 overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -22,7 +22,7 @@ const Home: React.FC = () => {
                                 </span>
                                 Live Auctions Now
                             </div>
-                            <h1 className="text-5xl md:text-7xl font-black text-slate-900 mb-6 leading-tight tracking-tight">
+                            <h1 className="text-4xl sm:text-5xl md:text-7xl font-black text-slate-900 mb-6 leading-tight tracking-tight">
                                 Bid, Win, and <br />
                                 <span className="gradient-text">Own the Rare.</span>
                             </h1>

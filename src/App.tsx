@@ -12,6 +12,8 @@ import MyBids from './pages/MyBids';
 import MyListings from './pages/MyListings';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
+import EditAuction from './pages/EditAuction';
+
 const ProtectedRoute = ({ children, roles }: { children: React.ReactNode, roles?: string[] }) => {
   const { user, profile, loading } = useAuth();
 
@@ -53,6 +55,11 @@ function App() {
             <Route path="create-auction" element={
               <ProtectedRoute>
                 <CreateAuction />
+              </ProtectedRoute>
+            } />
+            <Route path="auctions/:id/edit" element={
+              <ProtectedRoute>
+                <EditAuction />
               </ProtectedRoute>
             } />
             <Route path="admin" element={

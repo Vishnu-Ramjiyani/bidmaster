@@ -3,7 +3,7 @@ import { supabase } from '../api/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import type { Auction } from '../types';
 import { Link } from 'react-router-dom';
-import { ShoppingBag, Trash2, Loader2, Plus } from 'lucide-react';
+import { ShoppingBag, Trash2, Loader2, Plus, Edit3 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
 const MyListings: React.FC = () => {
@@ -80,7 +80,14 @@ const MyListings: React.FC = () => {
                                         <p className="text-[10px] uppercase font-bold text-slate-400">Current Bid</p>
                                         <p className="text-xl font-black text-slate-900">${auction.current_price.toLocaleString()}</p>
                                     </div>
-                                    <button onClick={() => handleDelete(auction.id)} className="p-2 text-slate-400 hover:text-red-600 transition-colors"><Trash2 className="h-5 w-5" /></button>
+                                    <div className="flex items-center gap-2">
+                                        <Link to={`/auctions/${auction.id}/edit`} className="p-2 text-slate-400 hover:text-primary-600 transition-colors">
+                                            <Edit3 className="h-5 w-5" />
+                                        </Link>
+                                        <button onClick={() => handleDelete(auction.id)} className="p-2 text-slate-400 hover:text-red-600 transition-colors">
+                                            <Trash2 className="h-5 w-5" />
+                                        </button>
+                                    </div>
                                 </div>
                                 <Link to={`/auctions/${auction.id}`} className="btn-secondary block w-full text-center py-2 text-sm font-bold">View Listing</Link>
                             </div>

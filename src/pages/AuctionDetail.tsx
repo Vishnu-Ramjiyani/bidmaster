@@ -4,9 +4,10 @@ import { supabase } from '../api/supabase';
 import type { Auction, Bid } from '../types';
 import { useAuth } from '../contexts/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, Gavel, User, ArrowLeft, Loader2 } from 'lucide-react';
+import { Clock, Gavel, User, ArrowLeft, Loader2, Edit3 } from 'lucide-react';
 import { formatDistanceToNow, isAfter } from 'date-fns';
 import { toast } from 'react-hot-toast';
+import { Link } from 'react-router-dom';
 
 const AuctionDetail: React.FC = () => {
     const { id } = useParams<{ id: string }>();
@@ -176,12 +177,23 @@ const AuctionDetail: React.FC = () => {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <button
-                onClick={() => navigate(-1)}
-                className="flex items-center gap-2 text-slate-500 hover:text-slate-900 mb-8 transition-colors"
-            >
-                <ArrowLeft className="h-4 w-4" /> Back
-            </button>
+            <div className="flex items-center justify-between mb-8">
+                <button
+                    onClick={() => navigate(-1)}
+                    className="flex items-center gap-2 text-slate-500 hover:text-slate-900 transition-colors font-bold"
+                >
+                    <ArrowLeft className="h-4 w-4" /> Back
+                </button>
+
+                {user?.id === auction.seller_id && (
+                    <Link
+                        to={`/auctions/${id}/edit`}
+                        className="btn-secondary flex items-center gap-2 py-2 px-4 text-sm"
+                    >
+                        <Edit3 className="h-4 w-4" /> Edit Listing
+                    </Link>
+                )}
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
                 <div className="space-y-4">

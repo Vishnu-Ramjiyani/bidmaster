@@ -157,30 +157,6 @@ BEGIN
   SET current_price = NEW.amount
   WHERE id = NEW.auction_id;
 
-  -- Notify the seller
-  INSERT INTO public.notifications (user_id, message, type)
-  SELECT 
-    seller_id, 
-    'New bid of $' || NEW.amount || ' placed on your auction: ' || title, 
-    'bid'
-  FROM public.auctions
-  WHERE id = NEW.auction_id;
-
-  -- Notify previous highest bidder they've been outbid
-  INSERT INTO public.notifications (user_id, message, type)
-  SELECT 
-    bidder_id, 
-    'You have been outbid on auction: ' || (SELECT title FROM public.auctions WHERE id = NEW.auction_id), 
-    'outbid'
-  FROM public.bids
-  WHERE auction_id = NEW.auction_id 
-    AND bidder_id != NEW.bidder_id
-    AND amount = (
-      SELECT MAX(amount) 
-      FROM public.bids 
-      WHERE auction_id = NEW.auction_id AND id != NEW.id
-    );
-
   RETURN NEW;
 END;
 $$;

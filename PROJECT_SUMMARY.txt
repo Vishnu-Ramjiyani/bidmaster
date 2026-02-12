@@ -1,0 +1,40 @@
+BIDMASTER - ONLINE AUCTION PLATFORM
+PROJECT TECHNICAL SUMMARY
+
+1. LANGUAGES & TECHNOLOGIES USED:
+- TypeScript (TSX): Core programming language for logic and UI.
+- React: UI Framework.
+- Vite: Build tool.
+- Tailwind CSS: Styling and Layout.
+- Supabase: Backend (Database, Auth, Storage).
+- SQL (PostgreSQL): Database schema, Triggers, and Functions.
+- Libraries: Lucide React (Icons), Framer Motion (Animations), React Router (Navigation), React Hook Form & Zod (Forms/Validation).
+
+2. PROJECT STRUCTURE:
+
+COMPONENTS:
+- Navbar.tsx: Sticky navigation bar with auth logic.
+- MainLayout.tsx: Layout wrapper for all pages.
+
+PAGES:
+- Home.tsx: Landing page with features.
+- Auctions.tsx: Auction marketplace with filtering/searching.
+- AuctionDetail.tsx: Individual item details and bidding history.
+- Dashboard.tsx: User activity and stats overview.
+- CreateAuction.tsx: Form for listing new auction items.
+- EditAuction.tsx: Form for updating existing listings.
+- MyListings.tsx: List of items the user is selling.
+- MyBids.tsx: History of bids placed by the user.
+- Login.tsx / Register.tsx: User authentication pages.
+- Admin.tsx: Backend tools for managing categories.
+
+3. KEY BACKEND LOGIC (SQL Triggers):
+- handle_new_user: Auto-profiles creation on signup.
+- handle_new_bid: Auto-updates auction prices in real-time.
+
+4. SYSTEM FEATURES:
+- Real-time bid updates via Supabase.
+- Mobile-responsive design.
+- Secure bidding limits (price locking when bids exist).
+- Image upload and storage management.
+- Dynamic "Live/Ended" status tracking.

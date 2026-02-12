@@ -1,9 +1,41 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Gavel, Shield, Zap, Clock, ArrowRight } from 'lucide-react';
+import { Gavel, Shield, Zap, Clock, ArrowRight, Loader2 } from 'lucide-react';
+import { supabase } from '../api/supabase';
+import type { Auction } from '../types';
+import { formatDistanceToNow } from 'date-fns';
 
 const Home: React.FC = () => {
+    const [featuredAuctions, setFeaturedAuctions] = useState<Auction[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        fetchFeaturedAuctions();
+    }, []);
+
+    const fetchFeaturedAuctions = async () => {
+        try {
+            const { data, error } = await supabase
+                .from('auctions')
+                .select(`
+                  *,
+                  seller:profiles!seller_id(username, avatar_url),
+                  category:categories(name)
+                `)
+                .eq('status', 'active')
+                .order('created_at', { ascending: false })
+                .limit(4);
+
+            if (error) throw error;
+            setFeaturedAuctions(data || []);
+        } catch (error) {
+            console.error('Error fetching featured auctions:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="flex flex-col hero-gradient overflow-x-hidden">
             {/* Hero Section */}
@@ -85,6 +117,81 @@ const Home: React.FC = () => {
                             <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-indigo-100 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
                         </motion.div>
                     </div>
+                </div>
+            </section>
+
+            {/* Featured Auctions */}
+            <section className="py-24 px-4 bg-slate-50/50">
+                <div className="max-w-7xl mx-auto">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-16">
+                        <div className="text-center md:text-left">
+                            <h2 className="text-xs font-black text-primary-600 uppercase tracking-[0.3em] mb-4">Marketplace</h2>
+                            <h2 className="text-4xl font-black text-slate-900 tracking-tight">Live Auctions</h2>
+                        </div>
+                        <Link to="/auctions" className="btn-secondary flex items-center gap-2 px-8 py-3 text-sm">
+                            View All <ArrowRight className="h-4 w-4" />
+                        </Link>
+                    </div>
+
+                    {loading ? (
+                        <div className="flex flex-col items-center justify-center py-20">
+                            <Loader2 className="h-10 w-10 animate-spin text-primary-600 mb-4" />
+                            <p className="text-slate-400 font-bold">Fetching auctions...</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                            {featuredAuctions.map((auction, i) => (
+                                <motion.div
+                                    key={auction.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    whileInView={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: i * 0.1 }}
+                                    viewport={{ once: true }}
+                                    className="card group cursor-pointer bg-white"
+                                >
+                                    <Link to={`/auctions/${auction.id}`}>
+                                        <div className="aspect-[4/3] overflow-hidden relative">
+                                            <img
+                                                src={auction.images?.[0] || 'https://images.unsplash.com/photo-1544216717-3bbf52512659?q=80&w=2070&auto=format&fit=crop'}
+                                                alt={auction.title}
+                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                            />
+                                            <div className="absolute top-4 left-4">
+                                                <span className="badge glass text-slate-900 border-none shadow-sm">
+                                                    {auction.category?.name || 'Item'}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="p-6">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-tighter text-slate-400 bg-slate-50 px-2 py-1 rounded-md">
+                                                    <Clock className="h-3 w-3" />
+                                                    {new Date(auction.end_time) < new Date() ? 'Ended' : `${formatDistanceToNow(new Date(auction.end_time))} left`}
+                                                </div>
+                                            </div>
+
+                                            <h3 className="font-black text-lg mb-4 text-slate-900 line-clamp-1 group-hover:text-primary-600 transition-colors">
+                                                {auction.title}
+                                            </h3>
+
+                                            <div className="flex items-end justify-between border-t border-slate-50 pt-4">
+                                                <div>
+                                                    <p className="text-[10px] text-slate-400 mb-0.5 font-black uppercase tracking-widest">Current Bid</p>
+                                                    <p className="text-xl font-black text-slate-900 tracking-tight">
+                                                        ${auction.current_price.toLocaleString()}
+                                                    </p>
+                                                </div>
+                                                <div className="btn-primary p-2.5 rounded-xl group-hover:scale-110 transition-transform">
+                                                    <Gavel className="h-5 w-5" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                </motion.div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </section>
 
